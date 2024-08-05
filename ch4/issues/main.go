@@ -11,11 +11,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"gopl.io/ch4/github"
 )
 
-//!+
+const (
+	hoursInYear  = 8760
+	hoursInMonth = 720
+)
+
+// !+
 func main() {
 	result, err := github.SearchIssues(os.Args[1:])
 	if err != nil {
@@ -23,8 +29,15 @@ func main() {
 	}
 	fmt.Printf("%d issues:\n", result.TotalCount)
 	for _, item := range result.Items {
-		fmt.Printf("#%-5d %9.9s %.55s\n",
-			item.Number, item.User.Login, item.Title)
+		oldness := "less than a month ago"
+		timeSince := time.Since(item.CreatedAt).Hours()
+		if timeSince > hoursInYear {
+			oldness = "more than a year ago"
+		} else if timeSince < hoursInYear && timeSince > hoursInMonth {
+			oldness = "less than a year ago"
+		}
+		fmt.Printf("#%-5d %9.9s %.55s %s\n",
+			item.Number, item.User.Login, item.Title, oldness)
 	}
 }
 
